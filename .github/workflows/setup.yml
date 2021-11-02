@@ -24,8 +24,12 @@ jobs:
     
     - name: Zip js files
       run: |
-          ls -al
           pwd
-          zip -r webapp-${{ github.run_number }}.zip ./codedeploy/webapp
+          echo "**************"
           ls -al
+          echo "**************"
+          zip -r webapp-${{ github.run_number }}-${{ GITHUB_SHA }}.zip ./webapp
           pwd
+          echo "**************"
+          ls -al
+          echo "**************"
