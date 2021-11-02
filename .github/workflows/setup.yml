@@ -40,6 +40,6 @@ jobs:
             echo "**************"
             ls -al          
             echo "**************"
-            aws configure
+            aws configure list
             echo "**************"
             aws s3 cp webapp-${{ github.run_number }}-${{ github.sha }}.zip s3://${{ secrets.CODEDEPLOY_S3_BUCKET }}
