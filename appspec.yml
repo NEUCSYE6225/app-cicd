@@ -4,3 +4,21 @@ os: linux
 files:
   - source: ./
     destination: /home/ubuntu/webapp/
+
+hooks:
+  ApplicationStop:
+  - location: ./deployscript/applicationStop.sh
+    timeout: 60
+    runas: ubuntu
+  BeforeInstall:
+  - location: ./deployscript/applicationStop.sh
+    timeout: 60
+    runas: ubuntu
+  AfterInstall:
+  - location: ./deployscript/applicationStop.sh
+    timeout: 60
+    runas: ubuntu
+  ApplicationStart:
+  - location: ./deployscript/applicationStop.sh
+    timeout: 60
+    runas: ubuntu
