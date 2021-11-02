@@ -16,7 +16,7 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Node v14.18.0
-      uses: hashicorp/setup-node@v1
+      uses: actions/setup-node@v1
       with:
           node-version: 14.18
     
