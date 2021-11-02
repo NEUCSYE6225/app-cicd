@@ -3,7 +3,7 @@ os: linux
 
 files:
   - source: ./
-    destination: /home/ubuntu/webapp/
+    destination: /home/ubuntu/codedeploy/
 
 hooks:
   ApplicationStop:
