@@ -23,27 +23,35 @@ jobs:
           aws-region: "us-east-1"
     
     - name: Zip js files
-      run: |
+      run:
           echo "************** Result of pwd **************"
           pwd
-          echo "**************Result of ls -al **************"
+          echo "************** Result of ls -al **************"
           ls -al
-          echo "**************Result of zip **************"
+          echo "************** Result of zip **************"
           zip -r webapp-${{ github.run_number }}-${{ github.sha }}.zip ./webapp
-          echo "**************Result of pwd **************"
+          echo "************** Result of pwd **************"
           pwd
-          echo "**************Result of ls **************"
+          echo "************** Result of ls **************"
           ls -al
     
-    - name: upload to S3
-      run: |
-            echo "**************Result of pwd **************"
+    - name: Upload to S3
+      run: 
+            echo "************** Result of pwd **************"
             pwd     
-            echo "**************Result of ls **************"
+            echo "************** Result of ls **************"
             ls -al          
-            echo "**************Result of aws configure **************"
+            echo "************** Result of aws configure **************"
             aws configure list
-            echo "**************Result of aws s3 cp **************"
+            echo "************** Result of aws s3 cp **************"
             aws s3 cp webapp-${{ github.run_number }}-${{ github.sha }}.zip s3://${{ secrets.CODEDEPLOY_S3_BUCKET }}
-            echo "**************Result of aws s3 ls**************"
-            aws s3 ls s3://${{ secrets.CODEDEPLOY_S3_BUCKET }}
+            echo "************** Result of aws s3 ls **************"
+            aws s3 ls s3://${{ secrets.CODEDEPLOY_S3_BUCKET }}  
+
+    - name: Trigger a new CodeDeploy deployment
+      run: aws deploy create-deployment \
+          --application-name csye6225-webapp \
+          --deployment-config-name CodeDeployDefault.AllAtOnce \
+          --deployment-group-name csye6225-webapp-deployment \
+          --description "My demo deployment" \
+          --s3-location bucket=${{ secrets.CODEDEPLOY_S3_BUCKET }},bundleType=zip,key=webapp-${{ github.run_number }}-${{ github.sha }}.zip
