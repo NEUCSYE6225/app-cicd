@@ -24,25 +24,26 @@ jobs:
     
     - name: Zip js files
       run: |
+          echo "************** Result of pwd **************"
           pwd
-          echo "**************"
+          echo "**************Result of ls -al **************"
           ls -al
-          echo "**************"
+          echo "**************Result of zip **************"
           zip -r webapp-${{ github.run_number }}-${{ github.sha }}.zip ./webapp
+          echo "**************Result of pwd **************"
           pwd
-          echo "**************"
+          echo "**************Result of ls **************"
           ls -al
-          echo "**************"
     
     - name: upload to S3
       run: |
+            echo "**************Result of pwd **************"
             pwd     
-            echo "**************"
+            echo "**************Result of ls **************"
             ls -al          
-            echo "**************"
+            echo "**************Result of aws configure **************"
             aws configure list
-            echo "**************"
+            echo "**************Result of aws s3 cp **************"
             aws s3 cp webapp-${{ github.run_number }}-${{ github.sha }}.zip s3://${{ secrets.CODEDEPLOY_S3_BUCKET }}
-            echo "**************"
-            aws s3 ls s3://${{ secrets.CODEDEPLOY_S3_BUCKET }} | grep webapp-${{ github.run_number }}-${{ github.sha }}.zip
-            echo "**************"
+            echo "**************Result of aws s3 ls**************"
+            aws s3 ls s3://${{ secrets.CODEDEPLOY_S3_BUCKET }}
