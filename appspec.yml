@@ -2,8 +2,6 @@ version: 0.0
 os: linux
 
 files:
-  - source: ./webapp/
-    destination: /home/ubuntu/webapp/
   - source: ./
     destination: /home/ubuntu/codedeploy/
 
