@@ -28,7 +28,7 @@ jobs:
           echo "**************"
           ls -al
           echo "**************"
-          zip -r webapp-${{ github.run_number }}-${{ GITHUB_SHA }}.zip ./webapp
+          zip -r webapp-${{ github.run_number }}-${{ github.sha }}.zip ./webapp
           pwd
           echo "**************"
           ls -al
