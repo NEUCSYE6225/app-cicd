@@ -1,0 +1,26 @@
+
+name: Unit Tests for Pull Requests
+
+on:
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    name: nodejs-unit-test
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v2
+
+    - name: Node v14.18.0
+      uses: hashicorp/setup-node@v1
+      with:
+          node-version: 14.18
+    
+    - name: Test
+      run: |
+        npm install
+        npm test    
