@@ -8,7 +8,7 @@ ls -al /home/ubuntu/codedeploy/webapp/ >> /home/ubuntu/log.txt
 echo "/home/ubuntu/webapp/" >> /home/ubuntu/log.txt
 ls -al /home/ubuntu/webapp/ >> /home/ubuntu/log.txt
 echo "cp /home/ubuntu/codedeploy/webapp/*.js /home/ubuntu/webapp/" >> /home/ubuntu/log.txt
-cp -p /home/ubuntu/codedeploy/webapp/server.js /home/ubuntu/webapp/servertmp.js
+cp /home/ubuntu/codedeploy/webapp/server.js /home/ubuntu/webapp/servertmp.js
 sleep 3
 echo "/home/ubuntu/webapp/" >> /home/ubuntu/log.txt
 ls -al /home/ubuntu/webapp/ >> /home/ubuntu/log.txt
