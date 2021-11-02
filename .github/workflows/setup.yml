@@ -49,9 +49,4 @@ jobs:
             aws s3 ls s3://${{ secrets.CODEDEPLOY_S3_BUCKET }}  
 
     - name: Trigger a new CodeDeploy deployment
-      run: aws deploy create-deployment \
-          --application-name csye6225-webapp \
-          --deployment-config-name CodeDeployDefault.AllAtOnce \
-          --deployment-group-name csye6225-webapp-deployment \
-          --description "My demo deployment" \
-          --s3-location bucket=${{ secrets.CODEDEPLOY_S3_BUCKET }},bundleType=zip,key=webapp-${{ github.run_number }}-${{ github.sha }}.zip
+      run: aws deploy create-deployment --application-name csye6225-webapp --deployment-config-name CodeDeployDefault.AllAtOnce --deployment-group-name csye6225-webapp-deployment --description "My demo deployment" --s3-location bucket=${{ secrets.CODEDEPLOY_S3_BUCKET }},bundleType=zip,key=webapp-${{ github.run_number }}-${{ github.sha }}.zip
