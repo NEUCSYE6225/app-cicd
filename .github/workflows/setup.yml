@@ -33,3 +33,12 @@ jobs:
           echo "**************"
           ls -al
           echo "**************"
+    
+    - name: upload to S3
+      run: |
+            pwd     
+            echo "**************"
+            ls -al          
+            echo "**************"
+            aws configure list
+            echo "**************"
