@@ -13,7 +13,7 @@ app.use(bodyParser.json())
 app.use(bodyParser.raw({type: 'image/*',limit: '10mb'}));
 app.use(express.json())
 
-app.get('/v2/user/self',(req,res)=>{
+app.get('/v1/user/self',(req,res)=>{
     // fetch username data
     // get auth
     const auth = req.headers.authorization
@@ -61,7 +61,7 @@ app.get('/v2/user/self',(req,res)=>{
     })
 })
 
-app.post('/v2/user',(req,res)=>{
+app.post('/v1/user',(req,res)=>{
     // register account
     // get information from req.body
     let first_name
@@ -121,7 +121,7 @@ app.post('/v2/user',(req,res)=>{
     })
 })
 
-app.put('/v2/user/self',(req,res)=>{
+app.put('/v1/user/self',(req,res)=>{
     // update info
     // check if auth
     const auth = req.headers.authorization
@@ -215,7 +215,7 @@ app.put('/v2/user/self',(req,res)=>{
 
 // app.use(bodyParser.raw())
 
-app.post("/v2/user/self/pic",(req,res)=>{
+app.post("/v1/user/self/pic",(req,res)=>{
 
     // check if auth
     const auth = req.headers.authorization
@@ -279,7 +279,7 @@ app.post("/v2/user/self/pic",(req,res)=>{
     })
 })
 
-app.get("/v2/user/self/pic",(req,res)=>{
+app.get("/v1/user/self/pic",(req,res)=>{
     // check if auth
     const auth = req.headers.authorization
     if (!auth){
@@ -323,7 +323,7 @@ app.get("/v2/user/self/pic",(req,res)=>{
     })
 })
 
-app.delete("/v2/user/self/pic",(req,res)=>{
+app.delete("/v1/user/self/pic",(req,res)=>{
     // check if auth
     const auth = req.headers.authorization
     if (!auth){
