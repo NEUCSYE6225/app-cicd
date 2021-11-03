@@ -5,8 +5,7 @@ const db = require('./database')
 const aws_s3 = require("./awss3")
 const mime = require('mime-types')
 const app = express();
-const PORT = 5000;
-// abd
+const PORT = 3000;
 
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
