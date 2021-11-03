@@ -1,14 +1,5 @@
 helper = require("../webapp/helper")
 const assert = require('assert');
-helper.validateEmail("abcd")
-helper.validateEmail("abcd@abc.com")
-console.log(helper.validatePassword('a'))
-console.log(helper.validatePassword('1'))
-console.log(helper.validatePassword('1Ac'))
-console.log(helper.validatePassword('aaaaaaaa'))
-console.log(helper.validatePassword('12345678'))
-console.log(helper.validatePassword('abc45678'))
-console.log(helper.validatePassword('aBc12345'))
 
 describe("Validate Email", () => {
     it('catch invalid email', () => {
