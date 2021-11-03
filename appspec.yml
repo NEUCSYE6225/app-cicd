@@ -1,0 +1,24 @@
+version: 0.0
+os: linux
+
+files:
+  - source: ./
+    destination: /home/ubuntu/codedeploy/
+
+hooks:
+  ApplicationStop:
+  - location: ./deployscript/applicationStop.sh
+    timeout: 60
+    runas: ubuntu
+  BeforeInstall:
+  - location: ./deployscript/beforeInstall.sh
+    timeout: 60
+    runas: ubuntu
+  AfterInstall:
+  - location: ./deployscript/afterInstall.sh
+    timeout: 60
+    runas: ubuntu
+  ApplicationStart:
+  - location: ./deployscript/applicationStart.sh
+    timeout: 60
+    runas: ubuntu

@@ -1,0 +1,58 @@
+
+name: Deploy after Pull Requests
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    name: deploy
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v2
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
+          aws-region: "us-east-1"
+    
+    - name: Zip js files
+      run: |
+          echo "************** Result of pwd **************"
+          pwd
+          echo "************** Result of ls -al **************"
+          ls -al
+          echo "************** Result of zip **************"
+          zip webapp-${{ github.run_number }}-${{ github.sha }}.zip ./webapp/* appspec.yml ./deployscript/*
+          echo "************** Result of pwd **************"
+          pwd
+          echo "************** Result of ls **************"
+          ls -al
+    
+    - name: Upload to S3
+      run: |
+            echo "************** Result of pwd **************"
+            pwd     
+            echo "************** Result of ls **************"
+            ls -al          
+            echo "************** Result of aws configure **************"
+            aws configure list
+            echo "************** Result of aws s3 cp **************"
+            aws s3 cp webapp-${{ github.run_number }}-${{ github.sha }}.zip s3://${{ secrets.CODEDEPLOY_S3_BUCKET }}
+            echo "************** Result of aws s3 ls **************"
+            aws s3 ls s3://${{ secrets.CODEDEPLOY_S3_BUCKET }}  
+
+    - name: Trigger a new CodeDeploy deployment
+      run: |
+        aws s3 ls s3://${{ secrets.CODEDEPLOY_S3_BUCKET }}  | grep webapp-${{ github.run_number }}-${{ github.sha }}.zip
+        output=$(aws deploy create-deployment --application-name csye6225-webapp --deployment-config-name CodeDeployDefault.AllAtOnce --deployment-group-name csye6225-webapp-deployment --description "My demo deployment" --s3-location bucket=${{ secrets.CODEDEPLOY_S3_BUCKET }},bundleType=zip,key=webapp-${{ github.run_number }}-${{ github.sha }}.zip)
+        echo $output
+        dId=$(echo $output | jq -r '.deploymentId')
+        echo $dId
+        aws deploy wait deployment-successful --deployment-id $dId
