@@ -22,5 +22,5 @@ jobs:
     
     - name: Test
       run: |
-        npm install
+        npm install mocha --save-dev
         npm test    
