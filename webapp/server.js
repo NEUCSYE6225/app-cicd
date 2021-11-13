@@ -6,6 +6,8 @@ const aws_s3 = require("./awss3")
 const mime = require('mime-types')
 const app = express();
 const PORT = 3000;
+const publicIp = require('public-ip');
+
 
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
@@ -14,9 +16,19 @@ app.use(express.json())
 
 
 app.get('/',(req,res)=>{
-    res.json({ 
-        name: "Webapp-CSYE6225",
-        author: "Yongji Shen"
+    publicIp.v4().then(ip => {
+        res.json({ 
+            name: "Webapp-CSYE6225",
+            author: "Yongji Shen",
+            ip: ip
+        });
+    })
+    .catch(()=>{
+        res.json({ 
+            name: "Webapp-CSYE6225",
+            author: "Yongji Shen",
+            ip: "Unknown"
+        });
     });
 })
 
