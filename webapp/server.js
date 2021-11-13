@@ -12,6 +12,15 @@ app.use(bodyParser.json())
 app.use(bodyParser.raw({type: 'image/*',limit: '10mb'}));
 app.use(express.json())
 
+
+app.get('/',(req,res)=>{
+    res.json({ 
+        name: "Webapp-CSYE6225",
+        author: "Yongji Shen"
+    });
+})
+
+
 app.get('/v2/user/self',(req,res)=>{
     // fetch username data
     // get auth
