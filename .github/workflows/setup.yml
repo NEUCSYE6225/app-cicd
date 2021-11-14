@@ -29,7 +29,6 @@ jobs:
           echo "************** Result of ls -al **************"
           ls -al
           echo "************** Result of zip **************"
-          rm version.info
           touch version.info
           sudo echo "version = webapp-${{ github.run_number }}-${{ github.sha }}" >> version.info
           zip webapp-${{ github.run_number }}-${{ github.sha }}.zip ./webapp/* appspec.yml ./deployscript/* version.info cloudwatch-config.json
