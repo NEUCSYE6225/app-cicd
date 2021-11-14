@@ -8,6 +8,7 @@ const app = express();
 const PORT = 3000;
 const publicIp = require('public-ip');
 const fs = require('fs')
+const logger = require("./logger")
 
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
@@ -17,6 +18,7 @@ app.use(express.json())
 
 app.get('/',(req,res)=>{
     publicIp.v4().then(ip => {
+        logger.info("url:/ is ok")
         res.json({ 
             name: "Webapp-CSYE6225",
             author: "Yongji Shen",
@@ -25,6 +27,7 @@ app.get('/',(req,res)=>{
         });
     })
     .catch(()=>{
+        logger.warn("url:/ is not work, ip is missing")
         res.json({ 
             name: "Webapp-CSYE6225",
             author: "Yongji Shen",
