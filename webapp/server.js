@@ -21,7 +21,7 @@ app.use(express.json())
 app.get('/',(req,res)=>{
 
     const start = Date.now()
-    sdc.increment('GET request - /');
+    aws_sdc.increment('GET request - /');
     publicIp.v4().then(ip => {
         logger.info("url:/ is ok")
         const end = Date.now()
