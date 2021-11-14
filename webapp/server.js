@@ -25,7 +25,7 @@ app.get('/',(req,res)=>{
     publicIp.v4().then(ip => {
         logger.info("url:/ is ok")
         const end = Date.now()
-        aws_sdc.timing(`GET request - /`)
+        aws_sdc.timing(`GET request - / [SUCCESS]`,end-start)
         res.json({ 
             name: "Webapp-CSYE6225",
             author: "Yongji Shen",
@@ -35,7 +35,7 @@ app.get('/',(req,res)=>{
     })
     .catch(()=>{
         const end = Date.now()
-        aws_sdc.timing(`GET request - /`)
+        aws_sdc.timing(`GET request - / [FAILED]`,end-start)
         logger.warn("url:/ is not work, ip is missing")
         res.json({ 
             name: "Webapp-CSYE6225",
