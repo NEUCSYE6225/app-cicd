@@ -7,7 +7,7 @@ const mime = require('mime-types')
 const app = express();
 const PORT = 3000;
 const publicIp = require('public-ip');
-const result = require('dotenv').config()
+const fs = require('fs')
 
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
@@ -21,7 +21,7 @@ app.get('/',(req,res)=>{
             name: "Webapp-CSYE6225",
             author: "Yongji Shen",
             ip: ip,
-            version: process.env.version
+            version: fs.readFileSync('/home/ubuntu/codedeploy/version.info', 'utf8')
         });
     })
     .catch(()=>{
