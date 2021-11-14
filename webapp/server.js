@@ -9,6 +9,8 @@ const PORT = 3000;
 const publicIp = require('public-ip');
 const fs = require('fs')
 const logger = require("./logger")
+const SDC = require('statsd-client');
+aws_sdc = new SDC()
 
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
@@ -17,8 +19,13 @@ app.use(express.json())
 
 
 app.get('/',(req,res)=>{
+
+    const start = Date.now()
+    sdc.increment('GET request - /');
     publicIp.v4().then(ip => {
         logger.info("url:/ is ok")
+        const end = Date.now()
+        aws_sdc.timing(`GET request - /, use ${end-start} to finish`)
         res.json({ 
             name: "Webapp-CSYE6225",
             author: "Yongji Shen",
@@ -27,6 +34,8 @@ app.get('/',(req,res)=>{
         });
     })
     .catch(()=>{
+        const end = Date.now()
+        aws_sdc.timing(`GET request - /, use ${end-start} to finish`)
         logger.warn("url:/ is not work, ip is missing")
         res.json({ 
             name: "Webapp-CSYE6225",
