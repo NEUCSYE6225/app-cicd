@@ -4,6 +4,8 @@ const saltRounts = 10
 const uuid = require('uuid').v4
 // const {Sequelize,DataTypes} = require('sequelize');
 const result = require('dotenv').config()
+const SDC = require('statsd-client');
+const aws_sdc = new SDC()
 
 const db_username = process.env.DATABASE_username
 const db_password= process.env.DATABASE_password
@@ -24,7 +26,7 @@ const connection = mysql.createConnection({
 connection.connect(function(err) {
     if (err) throw err;
     console.log("Connected!");
-  });
+});
 const user_sql = `CREATE TABLE IF NOT EXISTS User (
                 id varchar(45) NOT NULL,
                 first_name varchar(45) NOT NULL,
@@ -33,8 +35,7 @@ const user_sql = `CREATE TABLE IF NOT EXISTS User (
                 username varchar(45) NOT NULL,
                 account_created datetime NOT NULL,
                 account_updated datetime NOT NULL,
-                PRIMARY KEY (username)
-            )`;
+                PRIMARY KEY (username))`;
 connection.query(user_sql, function (err, result) {
     if (err) throw err;
     console.log("User table created");
@@ -45,8 +46,7 @@ const  image_sql = `CREATE TABLE IF NOT EXISTS Image (
     url varchar(200) DEFAULT NULL,
     upload_date date DEFAULT NULL,
     user_id varchar(100) NOT NULL,
-    PRIMARY KEY (user_id)
-  )`;
+    PRIMARY KEY (user_id))`;
 connection.query(image_sql, function (err, result) {
     if (err) throw err;
     console.log("Image table created");
@@ -54,6 +54,7 @@ connection.query(image_sql, function (err, result) {
 
 
 function insertinfo ({first_name,last_name, username, password}){
+    const start = Date.now()
     // get uuid 
     const id = uuid()
     // get hash
@@ -67,10 +68,12 @@ function insertinfo ({first_name,last_name, username, password}){
         connection.query(sql, function(err,result){
             //error
             if (err){
+                aws_sdc.timing("db-insertinfo",Date.now() - start)
                 reject(err.code.toString())
             }
             //ok
             else{
+                aws_sdc.timing("db-insertinfo",Date.now() - start)
                 resolve(result)
             }
         })
@@ -78,6 +81,7 @@ function insertinfo ({first_name,last_name, username, password}){
 }
 
 function verifyinfo({username, password}){
+    const start = Date.now()
     // sql command
     const sql = `
                 select count(*)as count, password as hash ,id from User
@@ -87,11 +91,13 @@ function verifyinfo({username, password}){
         connection.query(sql, function(err,result) {
             //error
             if (err){
+                aws_sdc.timing("db-verifyinfo",Date.now() - start)
                 reject(err.code.toString())
             }
             else{
                 // if count == 0 => no user
                 if (result[0].count === 0){
+                    aws_sdc.timing("db-verifyinfo",Date.now() - start)
                     reject("Username doesn't exist")
                 }
                 else{
@@ -102,10 +108,12 @@ function verifyinfo({username, password}){
                     .then (function(result){
                         if (result){
                             //ok
+                            aws_sdc.timing("db-verifyinfo",Date.now() - start)
                             resolve({id})
                         }
                         else{
                             //reject
+                            aws_sdc.timing("db-verifyinfo",Date.now() - start)
                             reject("Invalid Password")
                         }
                     })
@@ -116,6 +124,7 @@ function verifyinfo({username, password}){
 }
 
 function getinfo ({username}) {
+    const start = Date.now()
     // sql command
     const sql = `
                 select id,first_name,last_name,username,account_created,account_updated from User
@@ -125,12 +134,14 @@ function getinfo ({username}) {
         connection.query(sql, function (err,result){
             // error
             if (err){
+                aws_sdc.timing("db-getinfo",Date.now() - start)
                 reject(err.code.toString())
             }
             else{
                 // get info
                 const {id,first_name,last_name,username,account_created,account_updated} = result[0]
                 // return
+                aws_sdc.timing("db-getinfo",Date.now() - start)
                 resolve({id,first_name,last_name,username,account_created,account_updated})
             }
         })
@@ -138,6 +149,7 @@ function getinfo ({username}) {
 }
 
 function updateinfo ({first_name,last_name, username, password,password_status}){
+    const start = Date.now()
     let sql
     // check if password is changed or not, update when something is changed
     if (!password_status){
@@ -165,9 +177,11 @@ function updateinfo ({first_name,last_name, username, password,password_status})
     return new Promise(function (resolve,reject){
         connection.query(sql,function (err, result){
             if (err){
+                aws_sdc.timing("db-updateinfo",Date.now() - start)
                 reject(err.code.toString())
             }
             else{
+                aws_sdc.timing("db-updateinfo",Date.now() - start)
                 resolve(result)
             }
         })
@@ -176,8 +190,7 @@ function updateinfo ({first_name,last_name, username, password,password_status})
 
 
 function insertimage({file_name,user_id}){
-    // console.log("Insert image")
-    // console.log({file_name,user_id})
+    const start = Date.now()
     const id = uuid()
     const url = `${bucket_name}/${user_id}/${file_name}`
     const sql = `insert into Image (file_name, id, url,upload_date,user_id)
@@ -186,11 +199,13 @@ function insertimage({file_name,user_id}){
         connection.query(sql, function(err,result){
             //error
             if (err){
+                aws_sdc.timing("db-insertimage",Date.now() - start)
                 reject(err.code.toString())
             }
             //ok
             else{
                 // console.log(result)
+                aws_sdc.timing("db-insertimage",Date.now() - start)
                 resolve(user_id)
             }
         })
@@ -198,6 +213,7 @@ function insertimage({file_name,user_id}){
 }
 
 function getimage({user_id}){
+    const start = Date.now()
     const sql = `select file_name, id, url, DATE_FORMAT(upload_date, '%Y-%m-%d') as upload_date,user_id from Image
                 where user_id = '${user_id}'`
     return new Promise (function (resolve,reject){
@@ -205,12 +221,15 @@ function getimage({user_id}){
             //error
             // console.log(result)
             if (err){
+                aws_sdc.timing("db-getimage",Date.now() - start)
                 reject(err.code.toString())
             }
             if (!result.length){
+                aws_sdc.timing("db-getimage",Date.now() - start)
                 reject ("empty")
             }
             else{
+                aws_sdc.timing("db-getimage",Date.now() - start)
                 resolve(result)
             }
         })
@@ -218,6 +237,7 @@ function getimage({user_id}){
 }
 
 function deleteimage({user_id}){
+    const start = Date.now()
     const sql = `select * from Image where user_id = '${user_id}';
                 delete from Image where user_id = '${user_id}'`
     return new Promise (function (resolve,reject){
@@ -225,12 +245,15 @@ function deleteimage({user_id}){
             // console.log(result.affectedRows)
             //error
             if (err){
+                aws_sdc.timing("db-deleteimage",Date.now() - start)
                 reject(err.code.toString())
             }
             else if (result[1].affectedRows === 0){
+                aws_sdc.timing("db-deleteimage",Date.now() - start)
                 reject("Not Found")
             }
             else{
+                aws_sdc.timing("db-deleteimage",Date.now() - start)
                 resolve(result)
             }
         })
