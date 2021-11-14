@@ -7,7 +7,7 @@ const mime = require('mime-types')
 const app = express();
 const PORT = 3000;
 const publicIp = require('public-ip');
-
+const result = require('dotenv').config()
 
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
@@ -20,14 +20,16 @@ app.get('/',(req,res)=>{
         res.json({ 
             name: "Webapp-CSYE6225",
             author: "Yongji Shen",
-            ip: ip
+            ip: ip,
+            version: process.env.version
         });
     })
     .catch(()=>{
         res.json({ 
             name: "Webapp-CSYE6225",
             author: "Yongji Shen",
-            ip: "Unknown"
+            ip: "Unknown",
+            version: process.env.version
         });
     });
 })
