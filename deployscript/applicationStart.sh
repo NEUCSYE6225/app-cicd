@@ -2,6 +2,11 @@
 touch /home/ubuntu/log.txt
 date >> /home/ubuntu/log.txt
 echo "applicationStart" >> /home/ubuntu/log.txt
+while [ ! -f /home/ubuntu/autoscaling_done.txt ]
+do
+    echo "wait autoscaling_done.txt " >> /home/ubuntu/log.txt
+    sleep 10
+done
 killall -9 node
 echo "/home/ubuntu/codedeploy/" >> /home/ubuntu/log.txt
 ls -al /home/ubuntu/codedeploy/ >> /home/ubuntu/log.txt

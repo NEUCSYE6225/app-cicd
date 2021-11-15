@@ -8,17 +8,17 @@ files:
 hooks:
   ApplicationStop:
   - location: ./deployscript/applicationStop.sh
-    timeout: 60
+    timeout: 6000
     runas: ubuntu
   BeforeInstall:
   - location: ./deployscript/beforeInstall.sh
-    timeout: 60
+    timeout: 6000
     runas: ubuntu
   AfterInstall:
   - location: ./deployscript/afterInstall.sh
-    timeout: 60
+    timeout: 6000
     runas: ubuntu
   ApplicationStart:
   - location: ./deployscript/applicationStart.sh
-    timeout: 60
+    timeout: 6000
     runas: ubuntu
