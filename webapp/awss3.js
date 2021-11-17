@@ -1,7 +1,6 @@
 const AWS = require('aws-sdk');
 const result = require('dotenv').config()
 const fs = require('fs');
-
 const bucket_name = process.env.Bucket_name
 const s3 = new AWS.S3()
 
