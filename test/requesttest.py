@@ -1,10 +1,11 @@
 from datetime import time
 import requests
 import time
+import sys
 
 def getserverinfo():
     i = 0
-    while i != 5000000:
+    while True:
         r = requests.get("http://prod.yongjishen.me/")
         print("Timer:{}, {}".format(i,r.json()))
         i+=1
@@ -12,7 +13,7 @@ def getserverinfo():
 
 def postuser():
     i = 0
-    while i != 500:
+    while True:
         params = {
         "first_name": "test"+str(i),
         "last_name": "test"+str(i),
@@ -22,11 +23,54 @@ def postuser():
         print (params)
         i+=1
         r = requests.post("http://prod.yongjishen.me/v2/user/",json=params)
-        print("respond:{}".format(r.json()))
+        try:
+            print("respond:{}".format(r.json()))
+        except:
+            print("respond:{}".format(r))
         r = requests.get("http://prod.yongjishen.me/")
         print("Timer:{}, {}".format(i,r.json()))
 
-getserverinfo()
+
+def postImageforuser():
+    # register a account 
+    params = {
+        "first_name": "test1",
+        "last_name": "test1",
+        "password":"Test1111",
+        "username": "test1111@example.com"
+        }
+    r = requests.post("http://prod.yongjishen.me/v2/user/",json=params)
+    print(r)
+
+    # get image in binary
+    with open('/Users/yongjishen/Desktop/background.jpg', 'rb') as f:
+        data = f.read()
+
+    while True:
+        #upload
+        imagepost = requests.post("http://prod.yongjishen.me/v2/user/self/pic",
+                                    auth=('test1111@example.com','Test1111'),
+                                    headers={"Content-Type": "image/jpeg"},
+                                    data=data
+                                )
+        print(imagepost.json())
+        #delete
+        imagedelete = requests.delete("http://prod.yongjishen.me/v2/user/self/pic", 
+                                    auth=('test1111@example.com','Test1111')
+                                )
+        print(imagedelete)
+        print("*"*20)
+        # time.sleep(1)
+
+
+if __name__ == '__main__':
+    if int(sys.argv[1]) == 1:
+        getserverinfo()
+    elif int(sys.argv[1]) == 2:
+        postuser()
+    elif int(sys.argv[1]) == 3:
+        postImageforuser()
+
 
 
 
