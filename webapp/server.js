@@ -516,6 +516,6 @@ app.delete("/v2/user/self/pic",(req,res)=>{
 
 
 app.listen(PORT, () => {
-    logger.info(`Server is running right now.`)
+    logger.info(`Server is running right now. version number: ${fs.readFileSync('/home/ubuntu/codedeploy/version.info', 'utf8')}`)
     console.log(`http://localhost:${PORT}/`);
 });
