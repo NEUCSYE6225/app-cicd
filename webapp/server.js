@@ -43,6 +43,9 @@ app.get('/',(req,res)=>{
     });
 })
 
+app.get('/healthcheck',(req,res)=>{
+    res.json({result:"server is health"})
+})
 
 app.get('/v2/user/self',(req,res)=>{
     // fetch username data
