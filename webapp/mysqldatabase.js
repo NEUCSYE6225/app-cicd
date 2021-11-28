@@ -14,161 +14,112 @@ const db_name = process.env.DATABASE_name
 const db_read_replica = process.env.DATABASE_read_host
 const bucket_name = process.env.Bucket_name
 
-const sequelize = new Sequelize(db_name, null, null, {
-    dialect: 'mysql',
-    define: {
-        freezeTableName: true,
-        timestamps: false,
-        createdAt: false,
-        updatedAt: false,
-    },
-    port: 3306,
-    replication: {
-        read: [
-            {host: db_read_replica.split(":")[0], username: db_username, password: db_password}
-        ],
-        write: { host: db_host.split(":")[0], username: db_username, password: db_password}
-    },
-    pool: {
-        max: 20,
-        idle: 30000
-    },
+
+const connection = mysql.createConnection({
+    multipleStatements: true,
+    host     : db_host.split(":")[0],
+    user     : db_username,
+    password : db_password,
+    database: db_name
 })
 
-// sequelize.authenticate()
-// .then(()=>{
-//     console.log('Connection has been established successfully.');
-// })
-// .catch((error) =>{
-//     console.error('Unable to connect to the database:', error);
-// })
+connection.connect(function(err) {
+    if (err) throw err;
+    console.log("Main database is connected!");
+});
 
-const User = sequelize.define('User',{
-    id :{
-        type:DataTypes.STRING,
-        allowNull:false
-    },
-    first_name:{
-        type:DataTypes.STRING,
-        allowNull:false
-    },
-    last_name:{
-        type:DataTypes.STRING,
-        allowNull:false
-    },
-    password:{
-        type:DataTypes.STRING,
-        allowNull:false
-    },
-    username:{
-        type:DataTypes.STRING,
-        allowNull:false,
-        primaryKey: true 
-    },
-    account_created:{
-        type:Sequelize.DATE,
-        allowNull:false
-    },
-    account_updated:{
-        type:Sequelize.DATE,
-        allowNull:false
-    },
-    verified:{
-        type: DataTypes.BOOLEAN, 
-        allowNull: false, 
-        defaultValue: false
-    },
-    verified_on:{
-        type:Sequelize.DATE,
-    }
-})
-
-
-const Image = sequelize.define('Image',{
-    file_name:{
-        type:DataTypes.STRING,
-        allowNull:false
-    },
-    id:{
-        type:DataTypes.STRING,
-        allowNull:false
-    },
-    url:{
-        type:DataTypes.STRING,
-        allowNull:false
-    },
-    upload_date:{
-        type:Sequelize.DATE,
-    },
-    user_id:{
-        type:DataTypes.STRING,
-        allowNull:false,
-        primaryKey: true 
-    }
-})
-
-async function createTables(){
-    await sequelize.sync()
-}
-createTables()
+const user_sql = `CREATE TABLE IF NOT EXISTS User (
+                id varchar(45) NOT NULL,
+                first_name varchar(45) NOT NULL,
+                last_name varchar(45) NOT NULL,
+                password varchar(1000) NOT NULL,
+                username varchar(45) NOT NULL,
+                account_created datetime NOT NULL,
+                account_updated datetime NOT NULL,
+                PRIMARY KEY (username))`;
+connection.query(user_sql, function (err, result) {
+    if (err) throw err;
+    console.log("User table created");
+});
+const  image_sql = `CREATE TABLE IF NOT EXISTS Image (
+    file_name varchar(100) DEFAULT NULL,
+    id varchar(100) NOT NULL,
+    url varchar(200) DEFAULT NULL,
+    upload_date date DEFAULT NULL,
+    user_id varchar(100) NOT NULL,
+    PRIMARY KEY (user_id))`;
+connection.query(image_sql, function (err, result) {
+    if (err) throw err;
+    console.log("Image table created");
+}); 
 
 
 function insertinfo ({first_name,last_name, username, password}){
+    const start = Date.now()
     // get uuid 
     const id = uuid()
     // get hash
     const hash = bcrypt.hashSync(password, saltRounts);
     // sql command
-
-    return new Promise (function (resolve, reject) {
-        User.create({
-            id: id,
-            first_name:first_name,
-            last_name:last_name,
-            password:hash,
-            username:username,
-            account_created:new Date(),
-            account_updated:new Date()
-        })
-        .then((result)=>{
-            resolve(result)
-        })
-        .catch((err)=>{
-            reject(err)
+    const sql = `
+        insert into User (id,first_name,last_name,password,username,account_created,account_updated)
+        values ('${id}','${first_name}','${last_name}','${hash}','${username}',now(),now())
+        `
+    return new Promise (function (resolve,reject){
+        connection.query(sql, function(err,result){
+            //error
+            if (err){
+                aws_sdc.timing("db-insertinfo",Date.now() - start)
+                reject(err.code.toString())
+            }
+            //ok
+            else{
+                aws_sdc.timing("db-insertinfo",Date.now() - start)
+                resolve(result)
+            }
         })
     })
 }
 
 function verifyinfo({username, password}){
-
-    return new Promise (function(resolve,reject){
-        User.findAndCountAll({
-            where:{
-                username:username
-            }
-        })
-        .then((result)=>{
-            console.log(result.rows[0].dataValues)
-            if (result.count == 0){
-                reject("Username doesn't exist")
+    const start = Date.now()
+    // sql command
+    const sql = `
+                select count(*)as count, password as hash ,id from User
+                where username = '${username}'
+                `
+    return new Promise(function (resolve,reject){
+        connection.query(sql, function(err,result) {
+            //error
+            if (err){
+                aws_sdc.timing("db-verifyinfo",Date.now() - start)
+                reject(err.code.toString())
             }
             else{
-                const id = result.rows[0].dataValues.id
-                const hash = result.rows[0].dataValues.password
-                bcrypt.compare(password,hash)
-                .then((result)=>{
-                    if (result){
-                        resolve({id})
-                    }
-                    else{
-                        reject("Invalid Password")
-                    }
-                })
+                // if count == 0 => no user
+                if (result[0].count === 0){
+                    aws_sdc.timing("db-verifyinfo",Date.now() - start)
+                    reject("Username doesn't exist")
+                }
+                else{
+                    // password comparsion
+                    const id = result[0].id
+                    const hash = result[0].hash
+                    bcrypt.compare(password,hash)
+                    .then (function(result){
+                        if (result){
+                            //ok
+                            aws_sdc.timing("db-verifyinfo",Date.now() - start)
+                            resolve({id})
+                        }
+                        else{
+                            //reject
+                            aws_sdc.timing("db-verifyinfo",Date.now() - start)
+                            reject("Invalid Password")
+                        }
+                    })
+                }
             }
-        })
-        .catch((err)=>{
-            console.log(err)
-            reject(err)
         })
     })
 }
@@ -181,24 +132,19 @@ function getinfo ({username}) {
                 where username = '${username}'
                 `
     return new Promise(function (resolve, reject){
-        User.findOne({
-            where:{
-                username:username
+        connection.query(sql, function (err,result){
+            // error
+            if (err){
+                aws_sdc.timing("db-getinfo",Date.now() - start)
+                reject(err.code.toString())
             }
-        })
-        .then((result)=>{
-            const id = result.dataValues.id
-            const first_name = result.dataValues.first_name
-            const last_name = result.dataValues.last_name
-            const username = result.dataValues.username
-            const account_created = result.dataValues.account_created
-            const account_updated = result.dataValues.account_updated
-            const verified = result.dataValues.verified
-            const verified_on = result.dataValues.verified_on
-            resolve({id,first_name,last_name,username,account_created,account_updated,verified,verified_on})
-        })
-        .catch((err)=>{
-            reject(err)
+            else{
+                // get info
+                const {id,first_name,last_name,username,account_created,account_updated} = result[0]
+                // return
+                aws_sdc.timing("db-getinfo",Date.now() - start)
+                resolve({id,first_name,last_name,username,account_created,account_updated})
+            }
         })
     })
 }
@@ -315,6 +261,7 @@ function deleteimage({user_id}){
     })
 }
 module.exports = {
+    connection,
     insertinfo,
     getinfo,
     verifyinfo,

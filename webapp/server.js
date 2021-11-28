@@ -47,7 +47,7 @@ app.get('/healthcheck',(req,res)=>{
     res.json({result:"server is health"})
 })
 
-app.get('/v2/user/self',(req,res)=>{
+app.get('/v1/user/self',(req,res)=>{
     // fetch username data
     // get auth
     const start = Date.now()
@@ -97,7 +97,7 @@ app.get('/v2/user/self',(req,res)=>{
             // res.status(400).json()
             logger.error(`GET request - /user/self, failed to get info. [${err}]`)
             aws_sdc.timing(`GET request - /user/self [FAILED]`,Date.now()-start)
-            res.status(400).json({result:err})
+            res.status(400).json(null)
         })
     })
     .catch((err)=>{
@@ -109,7 +109,7 @@ app.get('/v2/user/self',(req,res)=>{
     })
 })
 
-app.post('/v2/user',(req,res)=>{
+app.post('/v1/user',(req,res)=>{
     // register account
     // get information from req.body
     const start = Date.now()
@@ -173,7 +173,7 @@ app.post('/v2/user',(req,res)=>{
             // res.status(400).json()
             logger.error(`POST request - /user, failed to get user info. ${err}`)
             aws_sdc.timing(`POST request - /user [FAILED]`,Date.now()-start)
-            res.status(400).json({result:err})
+            res.status(400).json(null)
         })
     })
     .catch((err)=>{
@@ -185,7 +185,7 @@ app.post('/v2/user',(req,res)=>{
     })
 })
 
-app.put('/v2/user/self',(req,res)=>{
+app.put('/v1/user/self',(req,res)=>{
     // update info
     // check if auth
     aws_sdc.increment('PUT request - /user/self');
@@ -303,7 +303,7 @@ app.put('/v2/user/self',(req,res)=>{
 
 // app.use(bodyParser.raw())
 
-app.post("/v2/user/self/pic",(req,res)=>{
+app.post("/v1/user/self/pic",(req,res)=>{
     const start = Date.now()
     aws_sdc.increment('POST request - /user/self/pic');
     // check if auth
@@ -390,7 +390,7 @@ app.post("/v2/user/self/pic",(req,res)=>{
     })
 })
 
-app.get("/v2/user/self/pic",(req,res)=>{
+app.get("/v1/user/self/pic",(req,res)=>{
     const start = Date.now()
     aws_sdc.increment('GET request - /user/self/pic');
     // check if auth
@@ -448,7 +448,7 @@ app.get("/v2/user/self/pic",(req,res)=>{
     })
 })
 
-app.delete("/v2/user/self/pic",(req,res)=>{
+app.delete("/v1/user/self/pic",(req,res)=>{
     aws_sdc.increment('DELETE request - /user/self/pic');
     const start = Date.now()
     // check if auth

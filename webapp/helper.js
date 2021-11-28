@@ -1,3 +1,4 @@
+const db = require('./database')
 const validateEmail = function(email) {
     const re = /\S+@\S+\.\S+/;
     // console.log(re.test(email))
@@ -22,3 +23,13 @@ module.exports = {
 // console.log(validatePassword('12345678'))
 // console.log(validatePassword('abc45678'))
 // console.log(validatePassword('aBc12345'))
+
+
+// db.insertinfo ({first_name:'aaa',last_name:'aaa', username:'abccccc', password:'123'})
+// .then((result)=>{
+//     console.log(result)
+// })
+// .catch((err)=>{
+//     console.log("err:"+err)
+// })
+db.getinfo({username:'abc'})
