@@ -25,11 +25,11 @@ module.exports = {
 // console.log(validatePassword('aBc12345'))
 
 
-db.insertinfo ({first_name:'aaa',last_name:'aaa', username:'abccccc', password:'123'})
-.then((result)=>{
-    console.log(result)
-})
-.catch((err)=>{
-    console.log("err:"+err)
-})
+// db.insertinfo ({first_name:'aaa',last_name:'aaa', username:'abccccc', password:'123'})
+// .then((result)=>{
+//     console.log(result)
+// })
+// .catch((err)=>{
+//     console.log("err:"+err)
+// })
 // db.getinfo({username:'abc'})
