@@ -2,7 +2,7 @@ const mysql = require('mysql')
 const bcrypt = require('bcryptjs')
 const saltRounts = 10
 const uuid = require('uuid').v4
-// const {Sequelize,DataTypes} = require('sequelize');
+const {Sequelize,DataTypes} = require('sequelize');
 const result = require('dotenv').config()
 const SDC = require('statsd-client');
 const aws_sdc = new SDC()
@@ -11,46 +11,80 @@ const db_username = process.env.DATABASE_username
 const db_password= process.env.DATABASE_password
 const db_host = process.env.DATABASE_host
 const db_name = process.env.DATABASE_name
+const db_read_replica = process.env.DATABASE_read_host
 const bucket_name = process.env.Bucket_name
-    // console.log(db_username,db_password,db_host,db_name)
-    // console.log(db_host.split(":")[0])
 
-const connection = mysql.createConnection({
-    multipleStatements: true,
-    host     : db_host.split(":")[0],
-    user     : db_username,
-    password : db_password,
-    database: db_name
+const sequelize = new Sequelize(db_name, null, null, {
+    dialect: 'mysql',
+    port: 3306,
+    replication: {
+        read: [
+            {host: db_read_replica.split(":")[0], username: db_username, password: db_password}
+        ],
+        write: { host: db_host.split(":")[0], username: db_username, password: db_password}
+    },
+    pool: { // If you want to override the options used for the read/write pool you can do so here
+        max: 20,
+        idle: 30000
+    },
 })
 
-connection.connect(function(err) {
-    if (err) throw err;
-    console.log("Connected!");
-});
-const user_sql = `CREATE TABLE IF NOT EXISTS User (
-                id varchar(45) NOT NULL,
-                first_name varchar(45) NOT NULL,
-                last_name varchar(45) NOT NULL,
-                password varchar(1000) NOT NULL,
-                username varchar(45) NOT NULL,
-                account_created datetime NOT NULL,
-                account_updated datetime NOT NULL,
-                PRIMARY KEY (username))`;
-connection.query(user_sql, function (err, result) {
-    if (err) throw err;
-    console.log("User table created");
-});
-const  image_sql = `CREATE TABLE IF NOT EXISTS Image (
-    file_name varchar(100) DEFAULT NULL,
-    id varchar(100) NOT NULL,
-    url varchar(200) DEFAULT NULL,
-    upload_date date DEFAULT NULL,
-    user_id varchar(100) NOT NULL,
-    PRIMARY KEY (user_id))`;
-connection.query(image_sql, function (err, result) {
-    if (err) throw err;
-    console.log("Image table created");
-}); 
+try {
+    await sequelize.authenticate();
+    console.log('Connection has been established successfully.');
+} catch (error) {
+    console.error('Unable to connect to the database:', error);
+}
+
+// const user = sequelize.define('User',{
+//     id :{},
+//     first_name:{},
+//     last_name:{},
+//     password:{},
+//     username:{},
+//     account_created:{},
+//     account_updated:{},
+//     verified:{},
+//     verified_on:{}
+// })
+
+// const connection = mysql.createConnection({
+//     multipleStatements: true,
+//     host     : db_host.split(":")[0],
+//     user     : db_username,
+//     password : db_password,
+//     database: db_name
+// })
+
+// connection.connect(function(err) {
+//     if (err) throw err;
+//     console.log("Main database is connected!");
+// });
+
+// const user_sql = `CREATE TABLE IF NOT EXISTS User (
+//                 id varchar(45) NOT NULL,
+//                 first_name varchar(45) NOT NULL,
+//                 last_name varchar(45) NOT NULL,
+//                 password varchar(1000) NOT NULL,
+//                 username varchar(45) NOT NULL,
+//                 account_created datetime NOT NULL,
+//                 account_updated datetime NOT NULL,
+//                 PRIMARY KEY (username))`;
+// connection.query(user_sql, function (err, result) {
+//     if (err) throw err;
+//     console.log("User table created");
+// });
+// const  image_sql = `CREATE TABLE IF NOT EXISTS Image (
+//     file_name varchar(100) DEFAULT NULL,
+//     id varchar(100) NOT NULL,
+//     url varchar(200) DEFAULT NULL,
+//     upload_date date DEFAULT NULL,
+//     user_id varchar(100) NOT NULL,
+//     PRIMARY KEY (user_id))`;
+// connection.query(image_sql, function (err, result) {
+//     if (err) throw err;
+//     console.log("Image table created");
+// }); 
 
 
 function insertinfo ({first_name,last_name, username, password}){
