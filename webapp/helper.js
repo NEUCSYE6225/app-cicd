@@ -1,4 +1,3 @@
-const db = require('./database')
 const validateEmail = function(email) {
     const re = /\S+@\S+\.\S+/;
     // console.log(re.test(email))
