@@ -145,6 +145,10 @@ function verifyinfo({username, password}){
                 reject("Username doesn't exist")
             }
             else{
+                const verified = result.rows[0].dataValues.verified
+                if (!verified){
+                    reject(`${result.rows[0].dataValues.username} is not verified`)
+                }
                 const id = result.rows[0].dataValues.id
                 const hash = result.rows[0].dataValues.password
                 bcrypt.compare(password,hash)
@@ -181,9 +185,6 @@ function getinfo ({username}) {
             const account_updated = result.dataValues.account_updated
             const verified = result.dataValues.verified
             const verified_on = result.dataValues.verified_on
-            if (!verified){
-                reject(`${username} is not verified`)
-            }
             resolve({id,first_name,last_name,username,account_created,account_updated,verified,verified_on})
         })
         .catch((err)=>{
