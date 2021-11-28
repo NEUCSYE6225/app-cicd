@@ -97,7 +97,7 @@ app.get('/v1/user/self',(req,res)=>{
             // res.status(400).json()
             logger.error(`GET request - /user/self, failed to get info. [${err}]`)
             aws_sdc.timing(`GET request - /user/self [FAILED]`,Date.now()-start)
-            res.status(400).json(null)
+            res.status(400).json({result: err})
         })
     })
     .catch((err)=>{
@@ -173,7 +173,7 @@ app.post('/v1/user',(req,res)=>{
             // res.status(400).json()
             logger.error(`POST request - /user, failed to get user info. ${err}`)
             aws_sdc.timing(`POST request - /user [FAILED]`,Date.now()-start)
-            res.status(400).json(null)
+            res.status(400).json({result: err})
         })
     })
     .catch((err)=>{

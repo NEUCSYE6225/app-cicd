@@ -32,4 +32,4 @@ module.exports = {
 // .catch((err)=>{
 //     console.log("err:"+err)
 // })
-db.getinfo({username:'abc'})
+// db.getinfo({username:'abc'})

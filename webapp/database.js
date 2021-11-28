@@ -35,14 +35,6 @@ const sequelize = new Sequelize(db_name, null, null, {
     },
 })
 
-// sequelize.authenticate()
-// .then(()=>{
-//     console.log('Connection has been established successfully.');
-// })
-// .catch((error) =>{
-//     console.error('Unable to connect to the database:', error);
-// })
-
 const User = sequelize.define('User',{
     id :{
         type:DataTypes.STRING,
@@ -134,7 +126,7 @@ function insertinfo ({first_name,last_name, username, password}){
             resolve(result)
         })
         .catch((err)=>{
-            reject(err)
+            reject(err.original.code)
         })
     })
 }
@@ -167,19 +159,13 @@ function verifyinfo({username, password}){
             }
         })
         .catch((err)=>{
-            console.log(err)
-            reject(err)
+            reject(err.original.code)
         })
     })
 }
 
 function getinfo ({username}) {
     const start = Date.now()
-    // sql command
-    const sql = `
-                select id,first_name,last_name,username,account_created,account_updated from User
-                where username = '${username}'
-                `
     return new Promise(function (resolve, reject){
         User.findOne({
             where:{
@@ -195,6 +181,9 @@ function getinfo ({username}) {
             const account_updated = result.dataValues.account_updated
             const verified = result.dataValues.verified
             const verified_on = result.dataValues.verified_on
+            if (!verified){
+                reject(`${username} is not verified`)
+            }
             resolve({id,first_name,last_name,username,account_created,account_updated,verified,verified_on})
         })
         .catch((err)=>{
