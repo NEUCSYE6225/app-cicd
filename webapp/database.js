@@ -107,10 +107,10 @@ const Image = sequelize.define('Image',{
     }
 })
 
-// async function createTables(){
-//     await sequelize.sync()
-// }
-// createTables()
+async function createTables(){
+    await sequelize.sync()
+}
+createTables()
 
 
 function insertinfo ({first_name,last_name, username, password}){
