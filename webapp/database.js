@@ -35,14 +35,6 @@ const sequelize = new Sequelize(db_name, null, null, {
     },
 })
 
-// sequelize.authenticate()
-// .then(()=>{
-//     console.log('Connection has been established successfully.');
-// })
-// .catch((error) =>{
-//     console.error('Unable to connect to the database:', error);
-// })
-
 const User = sequelize.define('User',{
     id :{
         type:DataTypes.STRING,
@@ -107,10 +99,10 @@ const Image = sequelize.define('Image',{
     }
 })
 
-// async function createTables(){
-//     await sequelize.sync()
-// }
-// createTables()
+async function createTables(){
+    await sequelize.sync()
+}
+createTables()
 
 
 function insertinfo ({first_name,last_name, username, password}){
