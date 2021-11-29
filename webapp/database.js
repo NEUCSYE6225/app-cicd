@@ -146,11 +146,11 @@ function verifyinfo({username, password}){
                 reject("Username doesn't exist")
             }
             else{
-                // const verified = result.rows[0].dataValues.verified
-                // if (!verified){
-                //     reject(`${result.rows[0].dataValues.username} is not verified`)
-                // }
-                // else{
+                const verified = result.rows[0].dataValues.verified
+                if (!verified){
+                    reject(`${result.rows[0].dataValues.username} is not verified`)
+                }
+                else{
                     const id = result.rows[0].dataValues.id
                     const hash = result.rows[0].dataValues.password
                     bcrypt.compare(password,hash)
@@ -163,7 +163,7 @@ function verifyinfo({username, password}){
                         }
                     })
                 }
-            // }
+            }
         })
         .catch((err)=>{
             reject(err.original.code)
