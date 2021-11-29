@@ -107,6 +107,7 @@ createTables()
 
 
 function insertinfo ({first_name,last_name, username, password}){
+    const start = Date.now()
     // get uuid 
     const id = uuid()
     // get hash
@@ -124,16 +125,18 @@ function insertinfo ({first_name,last_name, username, password}){
             account_updated:new Date()
         })
         .then((result)=>{
+            aws_sdc.timing("db-insertinfo",Date.now() - start)
             resolve(result)
         })
         .catch((err)=>{
+            aws_sdc.timing("db-insertinfo",Date.now() - start)
             reject(err.original.code)
         })
     })
 }
 
 function verifyinfo({username, password}){
-
+    const start = Date.now()
     return new Promise (function(resolve,reject){
         User.findAndCountAll({
             where:{
@@ -143,11 +146,13 @@ function verifyinfo({username, password}){
         .then((result)=>{
             // console.log(result.rows[0].dataValues)
             if (result.count == 0){
+                aws_sdc.timing("db-verifyinfo",Date.now() - start)
                 reject("Username doesn't exist")
             }
             else{
                 const verified = result.rows[0].dataValues.verified
                 if (!verified){
+                    aws_sdc.timing("db-verifyinfo",Date.now() - start)
                     reject(`${result.rows[0].dataValues.username} is not verified`)
                 }
                 else{
@@ -156,9 +161,11 @@ function verifyinfo({username, password}){
                     bcrypt.compare(password,hash)
                     .then((result)=>{
                         if (result){
+                            aws_sdc.timing("db-verifyinfo",Date.now() - start)
                             resolve({id})
                         }
                         else{
+                            aws_sdc.timing("db-verifyinfo",Date.now() - start)
                             reject("Invalid Password")
                         }
                     })
@@ -166,6 +173,7 @@ function verifyinfo({username, password}){
             }
         })
         .catch((err)=>{
+            aws_sdc.timing("db-verifyinfo",Date.now() - start)
             reject(err.original.code)
         })
     })
@@ -188,9 +196,11 @@ function getinfo ({username}) {
             const account_updated = result.dataValues.account_updated
             const verified = result.dataValues.verified
             const verified_on = result.dataValues.verified_on
+            aws_sdc.timing("db-getinfo",Date.now() - start)
             resolve({id,first_name,last_name,username,account_created,account_updated,verified,verified_on})
         })
         .catch((err)=>{
+            aws_sdc.timing("db-getinfo",Date.now() - start)
             reject(err.original.code)
         })
     })
@@ -225,9 +235,11 @@ function updateinfo ({first_name,last_name, username, password,password_status})
             }
         })
         .then((result)=>{
+            aws_sdc.timing("db-updateinfo",Date.now() - start)
             resolve(result)
         })
         .catch((err)=>{
+            aws_sdc.timing("db-updateinfo",Date.now() - start)
             reject(err.original.code)
         })
     })
@@ -238,62 +250,60 @@ function insertimage({file_name,user_id}){
     const start = Date.now()
     const id = uuid()
     const url = `${bucket_name}/${user_id}/${file_name}`
-    const sql = `insert into Image (file_name, id, url,upload_date,user_id)
-                values ('${file_name}','${id}','${url}',date(now()),'${user_id}')`
     return new Promise (function (resolve,reject){
-        connection.query(sql, function(err,result){
-            //error
-            if (err){
-                aws_sdc.timing("db-insertimage",Date.now() - start)
-                reject(err.code.toString())
-            }
-            //ok
-            else{
-                // console.log(result)
-                aws_sdc.timing("db-insertimage",Date.now() - start)
-                resolve(user_id)
-            }
+        Image.create({
+            file_name:file_name,
+            id:id,
+            url:url,
+            upload_date:new Date(),
+            user_id:user_id
+        })
+        .then(()=>{
+            aws_sdc.timing("db-insertimage",Date.now() - start)
+            resolve(user_id)
+        })
+        .catch((err)=>{
+            aws_sdc.timing("db-insertimage",Date.now() - start)
+            reject(err.original.code)
         })
     })
 }
 
 function getimage({user_id}){
     const start = Date.now()
-    const sql = `select file_name, id, url, DATE_FORMAT(upload_date, '%Y-%m-%d') as upload_date,user_id from Image
-                where user_id = '${user_id}'`
     return new Promise (function (resolve,reject){
-        connection.query(sql, function(err,result){
-            //error
-            // console.log(result)
-            if (err){
-                aws_sdc.timing("db-getimage",Date.now() - start)
-                reject(err.code.toString())
+        Image.findAndCountAll({
+            where:{
+                user_id:user_id
             }
-            if (!result.length){
+        })
+        .then((result)=>{
+            if (result.count === 0){
                 aws_sdc.timing("db-getimage",Date.now() - start)
                 reject ("empty")
             }
             else{
                 aws_sdc.timing("db-getimage",Date.now() - start)
-                resolve(result)
+                resolve(result.rows)
             }
+        })
+        .catch((err)=>{
+            aws_sdc.timing("db-getimage",Date.now() - start)
+            reject(err.original.code)
         })
     })
 }
 
 function deleteimage({user_id}){
     const start = Date.now()
-    const sql = `select * from Image where user_id = '${user_id}';
-                delete from Image where user_id = '${user_id}'`
     return new Promise (function (resolve,reject){
-        connection.query(sql, function(err,result){
-            // console.log(result.affectedRows)
-            //error
-            if (err){
-                aws_sdc.timing("db-deleteimage",Date.now() - start)
-                reject(err.code.toString())
+        Image.destroy({
+            where:{
+                user_id:user_id
             }
-            else if (result[1].affectedRows === 0){
+        })
+        .then((result)=>{
+            if (result === 0){
                 aws_sdc.timing("db-deleteimage",Date.now() - start)
                 reject("Not Found")
             }
@@ -301,6 +311,10 @@ function deleteimage({user_id}){
                 aws_sdc.timing("db-deleteimage",Date.now() - start)
                 resolve(result)
             }
+        })
+        .catch((err)=>{
+            aws_sdc.timing("db-deleteimage",Date.now() - start)
+            reject(err.original.code)
         })
     })
 }
