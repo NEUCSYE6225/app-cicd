@@ -22,6 +22,7 @@ const sequelize = new Sequelize(db_name, null, null, {
         createdAt: false,
         updatedAt: false,
     },
+    logging: false,
     port: 3306,
     replication: {
         read: [
@@ -140,7 +141,7 @@ function verifyinfo({username, password}){
             }
         })
         .then((result)=>{
-            console.log(result.rows[0].dataValues)
+            // console.log(result.rows[0].dataValues)
             if (result.count == 0){
                 reject("Username doesn't exist")
             }
@@ -149,17 +150,19 @@ function verifyinfo({username, password}){
                 if (!verified){
                     reject(`${result.rows[0].dataValues.username} is not verified`)
                 }
-                const id = result.rows[0].dataValues.id
-                const hash = result.rows[0].dataValues.password
-                bcrypt.compare(password,hash)
-                .then((result)=>{
-                    if (result){
-                        resolve({id})
-                    }
-                    else{
-                        reject("Invalid Password")
-                    }
-                })
+                else{
+                    const id = result.rows[0].dataValues.id
+                    const hash = result.rows[0].dataValues.password
+                    bcrypt.compare(password,hash)
+                    .then((result)=>{
+                        if (result){
+                            resolve({id})
+                        }
+                        else{
+                            reject("Invalid Password")
+                        }
+                    })
+                }
             }
         })
         .catch((err)=>{
@@ -188,7 +191,7 @@ function getinfo ({username}) {
             resolve({id,first_name,last_name,username,account_created,account_updated,verified,verified_on})
         })
         .catch((err)=>{
-            reject(err)
+            reject(err.original.code)
         })
     })
 }
@@ -200,35 +203,32 @@ function updateinfo ({first_name,last_name, username, password,password_status})
     if (!password_status){
         const hash = bcrypt.hashSync(password, saltRounts);
         // console.log(hash)
-        sql = `
-            update User
-            set 
-                first_name = '${first_name}',
-                last_name = '${last_name}',
-                password = '${hash}',
-                account_updated = now()
-            where username = '${username}' and (first_name <> '${first_name}' or last_name <> '${last_name}' or password <> '${hash}')  
-            `
+        sql = {
+            first_name: first_name,
+            last_name:last_name,
+            password:hash,
+            account_updated: new Date()
+        }
     } 
     else{
-        sql = `
-            update User
-            set first_name = '${first_name}',
-                last_name = '${last_name}',
-                account_updated = now()
-            where username = '${username}' and (first_name <> '${first_name}' or last_name <> '${last_name}' )  
-            `
+        sql = {
+            first_name: first_name,
+            last_name:last_name,
+            account_updated: new Date()
+        }
     }
     return new Promise(function (resolve,reject){
-        connection.query(sql,function (err, result){
-            if (err){
-                aws_sdc.timing("db-updateinfo",Date.now() - start)
-                reject(err.code.toString())
+        User.update(sql,
+        {
+            where: {
+                username:username
             }
-            else{
-                aws_sdc.timing("db-updateinfo",Date.now() - start)
-                resolve(result)
-            }
+        })
+        .then((result)=>{
+            resolve(result)
+        })
+        .catch((err)=>{
+            reject(err.original.code)
         })
     })
 }
