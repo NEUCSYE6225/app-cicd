@@ -488,8 +488,8 @@ app.delete("/v1/user/self/pic",(req,res)=>{
     .then(({id})=>{
         const user_id = id
         db.deleteimage({user_id})
-        .then((result)=>{
-            const url = result[0][0].url
+        .then(({url})=>{
+            const url = url
             const s3_image = Date.now()
             aws_s3.deletefile(url)
             .then(()=>{

@@ -314,26 +314,43 @@ function getimage({user_id}){
     })
 }
 
+
 function deleteimage({user_id}){
     const start = Date.now()
     return new Promise (function (resolve,reject){
-        Image.destroy({
+        Image.findAndCountAll({
             where:{
                 user_id:user_id
             }
         })
         .then((result)=>{
-            if (result === 0){
-                aws_sdc.timing("db-deleteimage",Date.now() - start)
-                reject("Not Found")
+            if (result.count === 0){
+                reject ("empty")
             }
             else{
-                aws_sdc.timing("db-deleteimage",Date.now() - start)
-                resolve(result)
+                const url = result.rows[0].dataValues.url
+                Image.destroy({
+                    where:{
+                        user_id:user_id
+                    }
+                })
+                .then((result)=>{
+                    if (result === 0){
+                        aws_sdc.timing("db-deleteimage",Date.now() - start)
+                        reject("Not Found")
+                    }
+                    else{
+                        aws_sdc.timing("db-deleteimage",Date.now() - start)
+                        resolve({url})
+                    }
+                })
+                .catch((err)=>{
+                    aws_sdc.timing("db-getimage",Date.now() - start)
+                    reject(err.original.code)
+                })
             }
         })
         .catch((err)=>{
-            aws_sdc.timing("db-deleteimage",Date.now() - start)
             reject(err.original.code)
         })
     })
