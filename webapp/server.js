@@ -9,7 +9,7 @@ const PORT = 3000;
 const publicIp = require('public-ip');
 const fs = require('fs')
 const logger = require("./logger")
-const snsemail = require("./snsemail")
+const SNS = require("./snsemail")
 const SDC = require('statsd-client');
 const aws_sdc = new SDC()
 
@@ -167,7 +167,7 @@ app.post('/v1/user',(req,res)=>{
             // return msg as json
             logger.info(`POST request - /user, request is succesful.`)
             aws_sdc.timing(`POST request - /user [SUCCESS]`,Date.now()-start)
-            snsemail.triggerSNS({username})
+            SNS.triggerSNS({username})
             res.status(201).json(msg)
         })
         .catch((err)=>{
