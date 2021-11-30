@@ -8,7 +8,6 @@ const sns_topic = process.env.SNS_topic
 
 async function triggerSNS({username}){
     const params = {
-        Type: "webapp-notification",
         Subject: "webapp-subject",
         Message: `{"username":"${username}"}`,
         TopicArn: sns_topic
