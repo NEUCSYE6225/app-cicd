@@ -9,6 +9,7 @@ const PORT = 3000;
 const publicIp = require('public-ip');
 const fs = require('fs')
 const logger = require("./logger")
+const snsemail = require("./snsemail")
 const SDC = require('statsd-client');
 const aws_sdc = new SDC()
 
@@ -166,6 +167,7 @@ app.post('/v1/user',(req,res)=>{
             // return msg as json
             logger.info(`POST request - /user, request is succesful.`)
             aws_sdc.timing(`POST request - /user [SUCCESS]`,Date.now()-start)
+            snsemail.triggerSNS({username})
             res.status(201).json(msg)
         })
         .catch((err)=>{
@@ -517,6 +519,13 @@ app.delete("/v1/user/self/pic",(req,res)=>{
     })
 })
 
+app.get("/v1/verifyUserEmail",(req,res)=> {
+    const username = req.query.email
+    const token = req.query.token
+    console.log(username)
+    console.log(token)
+    
+})
 
 app.listen(PORT, () => {
     logger.info(`Server is running right now. version number: ${fs.readFileSync('/home/ubuntu/codedeploy/version.info', 'utf8')}`)
