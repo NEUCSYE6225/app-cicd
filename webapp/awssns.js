@@ -1,7 +1,7 @@
 const AWS = require('aws-sdk');
 const logger = require("./logger")
 const result = require('dotenv').config()
-const sns = new AWS.SNS();
+const sns = new AWS.SNS({region: "us-east-1"});
 const sns_topic = process.env.SNS_topic
 
 
