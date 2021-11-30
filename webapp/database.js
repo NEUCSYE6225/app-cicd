@@ -245,6 +245,26 @@ function updateinfo ({first_name,last_name, username, password,password_status})
     })
 }
 
+function updateauth({username}){
+    const start = new Date()
+    const sql = {
+        verified: true,
+        verified_on: new Date()
+    }
+    return new Promise(function(resolve,reject){
+        User.update(sql,{
+            where:{
+                username:username
+            }
+        })
+        .then(()=>{
+            resolve(`${username} has been activated`)
+        })
+        .catch((err)=>{
+            reject(err)
+        })
+    })
+}
 
 function insertimage({file_name,user_id}){
     const start = Date.now()
@@ -325,6 +345,7 @@ module.exports = {
     updateinfo,
     insertimage,
     getimage,
-    deleteimage
+    deleteimage,
+    updateauth
 }
 

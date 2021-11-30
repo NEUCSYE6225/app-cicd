@@ -12,6 +12,7 @@ const logger = require("./logger")
 const SNS = require("./awssns")
 const SDC = require('statsd-client');
 const aws_sdc = new SDC()
+const dynamodb = require('./awsdynamodb')
 
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
@@ -522,9 +523,19 @@ app.delete("/v1/user/self/pic",(req,res)=>{
 app.get("/v1/verifyUserEmail",(req,res)=> {
     const username = req.query.email
     const token = req.query.token
-    console.log(username)
-    console.log(token)
-    
+    dynamodb.check({username,token})
+    .then(({username})=>{
+        db.updateauth({username})
+        .then((result)=>{
+            res.status(200).json({result:result})
+        })
+        .catch((err)=>{
+            res.status(401).json({result:err})
+        })
+    })
+    .catch((err)=>{
+        res.status(401).json({result:err})
+    })
 })
 
 app.listen(PORT, () => {
