@@ -522,17 +522,24 @@ app.delete("/v1/user/self/pic",(req,res)=>{
 app.get("/v1/verifyUserEmail",(req,res)=> {
     const username = req.query.email
     const token = req.query.token
+    const start = Date.now()
     dynamodb.check({username,token})
     .then(({username})=>{
         db.updateauth({username})
         .then((result)=>{
+            logger.info(`GET request - /v1/verifyUserEmail, request is successful`)
+            aws_sdc.timing(`GET request - /v1/verifyUserEmail [SUCCESS]`,Date.now()-start)
             res.status(200).json({result:result})
         })
         .catch((err)=>{
+            logger.error(`GET request - /v1/verifyUserEmail. [${err}]`)
+            aws_sdc.timing(`GET request - /v1/verifyUserEmail [FAILED]`,Date.now()-start)
             res.status(401).json({result:err})
         })
     })
     .catch((err)=>{
+        logger.error(`GET request - /v1/verifyUserEmail. [${err}]`)
+        aws_sdc.timing(`GET request - /v1/verifyUserEmail [FAILED]`,Date.now()-start)
         res.status(401).json({result:err})
     })
 })
