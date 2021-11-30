@@ -9,8 +9,10 @@ const PORT = 3000;
 const publicIp = require('public-ip');
 const fs = require('fs')
 const logger = require("./logger")
+const SNS = require("./awssns")
 const SDC = require('statsd-client');
 const aws_sdc = new SDC()
+const dynamodb = require('./awsdynamodb')
 
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
@@ -47,7 +49,7 @@ app.get('/healthcheck',(req,res)=>{
     res.json({result:"server is health"})
 })
 
-app.get('/v2/user/self',(req,res)=>{
+app.get('/v1/user/self',(req,res)=>{
     // fetch username data
     // get auth
     const start = Date.now()
@@ -97,7 +99,7 @@ app.get('/v2/user/self',(req,res)=>{
             // res.status(400).json()
             logger.error(`GET request - /user/self, failed to get info. [${err}]`)
             aws_sdc.timing(`GET request - /user/self [FAILED]`,Date.now()-start)
-            res.status(400).json({result:err})
+            res.status(400).json({result: err})
         })
     })
     .catch((err)=>{
@@ -109,7 +111,7 @@ app.get('/v2/user/self',(req,res)=>{
     })
 })
 
-app.post('/v2/user',(req,res)=>{
+app.post('/v1/user',(req,res)=>{
     // register account
     // get information from req.body
     const start = Date.now()
@@ -166,6 +168,7 @@ app.post('/v2/user',(req,res)=>{
             // return msg as json
             logger.info(`POST request - /user, request is succesful.`)
             aws_sdc.timing(`POST request - /user [SUCCESS]`,Date.now()-start)
+            SNS.triggerSNS({username})
             res.status(201).json(msg)
         })
         .catch((err)=>{
@@ -173,7 +176,7 @@ app.post('/v2/user',(req,res)=>{
             // res.status(400).json()
             logger.error(`POST request - /user, failed to get user info. ${err}`)
             aws_sdc.timing(`POST request - /user [FAILED]`,Date.now()-start)
-            res.status(400).json({result:err})
+            res.status(400).json({result: err})
         })
     })
     .catch((err)=>{
@@ -185,7 +188,7 @@ app.post('/v2/user',(req,res)=>{
     })
 })
 
-app.put('/v2/user/self',(req,res)=>{
+app.put('/v1/user/self',(req,res)=>{
     // update info
     // check if auth
     aws_sdc.increment('PUT request - /user/self');
@@ -303,7 +306,7 @@ app.put('/v2/user/self',(req,res)=>{
 
 // app.use(bodyParser.raw())
 
-app.post("/v2/user/self/pic",(req,res)=>{
+app.post("/v1/user/self/pic",(req,res)=>{
     const start = Date.now()
     aws_sdc.increment('POST request - /user/self/pic');
     // check if auth
@@ -390,7 +393,7 @@ app.post("/v2/user/self/pic",(req,res)=>{
     })
 })
 
-app.get("/v2/user/self/pic",(req,res)=>{
+app.get("/v1/user/self/pic",(req,res)=>{
     const start = Date.now()
     aws_sdc.increment('GET request - /user/self/pic');
     // check if auth
@@ -448,7 +451,7 @@ app.get("/v2/user/self/pic",(req,res)=>{
     })
 })
 
-app.delete("/v2/user/self/pic",(req,res)=>{
+app.delete("/v1/user/self/pic",(req,res)=>{
     aws_sdc.increment('DELETE request - /user/self/pic');
     const start = Date.now()
     // check if auth
@@ -485,8 +488,7 @@ app.delete("/v2/user/self/pic",(req,res)=>{
     .then(({id})=>{
         const user_id = id
         db.deleteimage({user_id})
-        .then((result)=>{
-            const url = result[0][0].url
+        .then(({url})=>{
             const s3_image = Date.now()
             aws_s3.deletefile(url)
             .then(()=>{
@@ -517,6 +519,23 @@ app.delete("/v2/user/self/pic",(req,res)=>{
     })
 })
 
+app.get("/v1/verifyUserEmail",(req,res)=> {
+    const username = req.query.email
+    const token = req.query.token
+    dynamodb.check({username,token})
+    .then(({username})=>{
+        db.updateauth({username})
+        .then((result)=>{
+            res.status(200).json({result:result})
+        })
+        .catch((err)=>{
+            res.status(401).json({result:err})
+        })
+    })
+    .catch((err)=>{
+        res.status(401).json({result:err})
+    })
+})
 
 app.listen(PORT, () => {
     logger.info(`Server is running right now. version number: ${fs.readFileSync('/home/ubuntu/codedeploy/version.info', 'utf8')}`)
