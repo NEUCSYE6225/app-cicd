@@ -9,7 +9,7 @@ const PORT = 3000;
 const publicIp = require('public-ip');
 const fs = require('fs')
 const logger = require("./logger")
-const SNS = require("./snsemail")
+const SNS = require("./awssns")
 const SDC = require('statsd-client');
 const aws_sdc = new SDC()
 

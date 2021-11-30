@@ -1,13 +1,15 @@
 const AWS = require('aws-sdk');
-const sns = new AWS.SNS({ "region": 'us-east-1' });
 const logger = require("./logger")
 const result = require('dotenv').config()
+const sns = new AWS.SNS();
 const sns_topic = process.env.SNS_topic
 
 
 
 async function triggerSNS({username}){
     const params = {
+        Type: "webapp-notification",
+        Subject: "webapp-subject",
         Message: `{"username":"${username}"}`,
         TopicArn: sns_topic
     };
