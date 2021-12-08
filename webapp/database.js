@@ -357,17 +357,18 @@ function deleteimage({user_id}){
             reject(err.original.code)
         })
     })
-
-    async function get_performance_schema(){
-        const sql = `
-            SELECT id, user, host, connection_type 
-            FROM performance_schema.threads pst 
-            INNER JOIN information_schema.processlist isp 
-            ON pst.processlist_id = isp.id; 
-        `
-        return await sequelize.query(sql)
-    }
 }
+
+async function get_performance_schema(){
+    const sql = `
+        SELECT id, user, host, connection_type 
+        FROM performance_schema.threads pst 
+        INNER JOIN information_schema.processlist isp 
+        ON pst.processlist_id = isp.id; 
+    `
+    return await sequelize.query(sql)
+}
+
 module.exports = {
     insertinfo,
     getinfo,
