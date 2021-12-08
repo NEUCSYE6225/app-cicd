@@ -5,6 +5,7 @@ const uuid = require('uuid').v4
 const {Sequelize,DataTypes} = require('sequelize');
 const result = require('dotenv').config()
 const SDC = require('statsd-client');
+const fs = require('fs')
 const aws_sdc = new SDC()
 
 const db_username = process.env.DATABASE_username
