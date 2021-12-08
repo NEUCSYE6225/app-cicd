@@ -49,10 +49,6 @@ app.get('/healthcheck',(req,res)=>{
     res.json({result:"server is health"})
 })
 
-app.get('/performanceschema',(req,res)=>{
-    res.json({result:db.get_performance_schema()})
-})
-
 app.get('/v1/user/self',(req,res)=>{
     // fetch username data
     // get auth

@@ -16,8 +16,11 @@ const bucket_name = process.env.Bucket_name
 
 const sequelize = new Sequelize(db_name, null, null, {
     dialect: 'mysql',
-    dialectOptions: {
-        ssl:'Amazon RDS'
+    // dialectOptions: {
+    //     ssl:'Amazon RDS'
+    // },
+    ssl:{
+        ca:fs.readFileSync('us-east-1-bundle.pem')
     },
     define: {
         freezeTableName: true,
@@ -359,16 +362,6 @@ function deleteimage({user_id}){
     })
 }
 
-async function get_performance_schema(){
-    const sql = `
-        SELECT id, user, host, connection_type 
-        FROM performance_schema.threads pst 
-        INNER JOIN information_schema.processlist isp 
-        ON pst.processlist_id = isp.id; 
-    `
-    return await sequelize.query(sql)
-}
-
 module.exports = {
     insertinfo,
     getinfo,
@@ -377,7 +370,6 @@ module.exports = {
     insertimage,
     getimage,
     deleteimage,
-    updateauth,
-    get_performance_schema
+    updateauth
 }
 
