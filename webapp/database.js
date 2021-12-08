@@ -16,6 +16,9 @@ const bucket_name = process.env.Bucket_name
 
 const sequelize = new Sequelize(db_name, null, null, {
     dialect: 'mysql',
+    dialectOptions: {
+        ssl:'Amazon RDS'
+    },
     define: {
         freezeTableName: true,
         timestamps: false,
