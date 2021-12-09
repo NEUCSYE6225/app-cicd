@@ -5,6 +5,7 @@ const uuid = require('uuid').v4
 const {Sequelize,DataTypes} = require('sequelize');
 const result = require('dotenv').config()
 const SDC = require('statsd-client');
+const fs = require('fs')
 const aws_sdc = new SDC()
 
 const db_username = process.env.DATABASE_username
@@ -16,6 +17,12 @@ const bucket_name = process.env.Bucket_name
 
 const sequelize = new Sequelize(db_name, null, null, {
     dialect: 'mysql',
+    // dialectOptions: {
+    //     ssl:'Amazon RDS'
+    // },
+    ssl:{
+        ca:fs.readFileSync('us-east-1-bundle.pem')
+    },
     define: {
         freezeTableName: true,
         timestamps: false,
@@ -355,6 +362,7 @@ function deleteimage({user_id}){
         })
     })
 }
+
 module.exports = {
     insertinfo,
     getinfo,
